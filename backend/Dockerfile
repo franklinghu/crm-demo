@@ -5,12 +5,10 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
+COPY .nprc ./
 
-# Delete lock file to ensure fresh install
-RUN rm -f package-lock.json npm-lock.json
-
-# Install ALL dependencies (including dev)
-RUN npm install --legacy-peer-deps
+# Install dependencies with exact versions (use .nprc to pin versions)
+RUN npm install --save-exact
 
 # Copy prisma schema
 COPY prisma ./prisma/
@@ -31,9 +29,10 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
+COPY .nprc ./
 
-# Install all dependencies (we need prisma CLI)
-RUN npm install --legacy-peer-deps
+# Install all dependencies with exact versions
+RUN npm install --save-exact --omit=dev
 
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
