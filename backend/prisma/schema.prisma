@@ -1,0 +1,173 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  phone     String?
+  avatar    String?
+  role      Role     @default(SALES)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  customers   Customer[]
+  leads       Lead[]
+  followups   Followup[]
+  reminders   Reminder[]
+  operationLogs OperationLog[]
+
+  @@map("users")
+}
+
+enum Role {
+  SALES
+  MANAGER
+  OPERATION
+  CEO
+}
+
+model Customer {
+  id                Int       @id @default(autoincrement())
+  ownerId           Int
+  owner             User      @relation(fields: [ownerId], references: [id])
+  name              String
+  phone             String
+  company           String
+  position          String?
+  email             String?
+  address           String?
+  source            String?
+  level             String    @default("B")
+  status            String    @default("POTENTIAL")
+  budget            Float?
+  interestedProducts Json?
+  remark            String?
+  companyInfo       Json?
+  nextFollowUpAt    DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+
+  leads    Lead[]
+  followups Followup[]
+  reminders Reminder[]
+
+  @@map("customers")
+  @@index([ownerId])
+  @@index([name])
+  @@index([phone])
+  @@index([company])
+}
+
+model Lead {
+  id                Int       @id @default(autoincrement())
+  customerId        Int
+  customer          Customer  @relation(fields: [customerId], references: [id])
+  ownerId           Int
+  owner             User      @relation(fields: [ownerId], references: [id])
+  title             String
+  status            String    @default("NEW")
+  amount            Float?
+  probability       Int?
+  expectedCloseDate DateTime?
+  lostReason        String?
+  remark            String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+
+  statusHistory LeadStatusHistory[]
+  followups     Followup[]
+
+  @@map("leads")
+  @@index([customerId])
+  @@index([ownerId])
+  @@index([status])
+}
+
+model LeadStatusHistory {
+  id         Int      @id @default(autoincrement())
+  leadId     Int
+  lead       Lead     @relation(fields: [leadId], references: [id])
+  oldStatus  String?
+  newStatus  String
+  changedBy  Int
+  remark     String?
+  createdAt  DateTime @default(now())
+
+  @@map("lead_status_history")
+  @@index([leadId])
+}
+
+model Followup {
+  id              Int       @id @default(autoincrement())
+  customerId      Int
+  customer        Customer  @relation(fields: [customerId], references: [id])
+  leadId          Int?
+  lead            Lead?     @relation(fields: [leadId], references: [id])
+  userId          Int
+  user            User      @relation(fields: [userId], references: [id])
+  type            String
+  content         String
+  audioUrl        String?
+  audioTranscript String?
+  nextFollowUpAt  DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("followups")
+  @@index([customerId])
+  @@index([userId])
+}
+
+model Reminder {
+  id          Int       @id @default(autoincrement())
+  customerId  Int
+  customer    Customer  @relation(fields: [customerId], references: [id])
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  type        String
+  title       String
+  content     String
+  scheduledAt DateTime
+  sentAt      DateTime?
+  status      String    @default("PENDING")
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("reminders")
+  @@index([customerId])
+  @@index([userId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model OperationLog {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  action     String
+  targetType String
+  targetId   Int?
+  targetName String?
+  changes    Json?
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@map("operation_logs")
+  @@index([userId])
+  @@index([action])
+}
