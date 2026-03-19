@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Delete lock file to ensure fresh install
-RUN rm -f package-lock.json
+RUN rm -f package-lock.json npm-lock.json
 
 # Install ALL dependencies (including dev)
 RUN npm install --legacy-peer-deps
@@ -18,8 +18,10 @@ COPY prisma ./prisma/
 # Copy all source code
 COPY . .
 
-# Generate Prisma Client and build
-RUN npx prisma generate
+# Generate Prisma Client using local installation
+RUN ./node_modules/.bin/prisma generate
+
+# Build the application
 RUN npm run build
 
 # Production stage
@@ -45,5 +47,5 @@ ENV PORT=3000
 # Expose port
 EXPOSE 3000
 
-# Run migrations and start
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run start:prod"]
+# Run migrations and start using local prisma
+CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && npm run start:prod"]
