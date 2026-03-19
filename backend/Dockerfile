@@ -3,11 +3,14 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy all package files
+# Copy package files
 COPY package*.json ./
 
+# Delete lock file to ensure fresh install
+RUN rm -f package-lock.json
+
 # Install ALL dependencies (including dev)
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Copy prisma schema
 COPY prisma ./prisma/
@@ -28,7 +31,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install all dependencies (we need prisma CLI)
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
