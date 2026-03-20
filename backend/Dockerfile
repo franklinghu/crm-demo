@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY .nprc ./
 
-# Install dependencies with exact versions (use .nprc to pin versions)
+# Install dependencies with exact versions
 RUN npm install --save-exact
 
 # Copy prisma schema
@@ -16,7 +16,7 @@ COPY prisma ./prisma/
 # Copy all source code
 COPY . .
 
-# Generate Prisma Client using local installation
+# Generate Prisma Client
 RUN ./node_modules/.bin/prisma generate
 
 # Build the application
@@ -38,13 +38,15 @@ RUN npm install --save-exact --omit=dev
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Set environment
 ENV NODE_ENV=production
 ENV PORT=3000
+ENV DATABASE_URL="${DATABASE_URL}"
 
 # Expose port
 EXPOSE 3000
 
-# Run migrations and start using local prisma
-CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && npm run start:prod"]
+# Start the application
+CMD ["node", "dist/main"]

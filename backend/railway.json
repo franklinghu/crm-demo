@@ -2,15 +2,11 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "DOCKERFILE",
-    "dockerfilePath": "backend/Dockerfile",
-    "nixpacksConfig": {
-      "startPhase": "no"
-    }
+    "dockerfilePath": "backend/Dockerfile"
   },
   "deploy": {
     "numReplicas": 1,
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10,
-    "startCommand": "sh -c './node_modules/.bin/prisma migrate deploy && node dist/main'"
+    "restartPolicyType": "ON_FAILURE", 
+    "restartPolicyMaxRetries": 10
   }
 }
