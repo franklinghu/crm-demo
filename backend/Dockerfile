@@ -31,19 +31,17 @@ WORKDIR /app
 COPY package*.json ./
 COPY .nprc ./
 
-# Install all dependencies with exact versions
-RUN npm install --save-exact --omit=dev
+# Install runtime dependencies + prisma for CLI
+RUN npm install --save-exact --omit=dev && \
+    npm install --save-exact prisma@5.22.0 @prisma/client@5.22.0
 
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Set environment
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV DATABASE_URL="${DATABASE_URL}"
 
 # Expose port
 EXPOSE 3000
