@@ -1,4 +1,4 @@
-# Use the official Node.js image
+# Stage 1: Build
 FROM node:20-alpine AS builder
 
 WORKDIR /app
@@ -7,23 +7,21 @@ WORKDIR /app
 COPY package*.json ./
 COPY .nprc ./
 
-# Install dependencies with exact versions
-RUN npm install --save-exact
+# Install dependencies
+RUN npm install
 
-# Copy prisma schema
+# Copy prisma schema and source
 COPY prisma ./prisma/
+COPY src ./src/
+COPY nest-cli.json ./
+COPY tsconfig.json ./
 
-# Copy all source code
-COPY . .
-
-# Generate Prisma Client
-RUN ./node_modules/.bin/prisma generate
-
-# Build the application
+# Generate Prisma Client and build
+RUN npx prisma generate
 RUN npm run build
 
-# Production stage
-FROM node:20-alpine AS runner
+# Stage 2: Production
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -31,13 +29,17 @@ WORKDIR /app
 COPY package*.json ./
 COPY .nprc ./
 
-# Install runtime dependencies + prisma for CLI
-RUN npm install --save-exact --omit=dev && \
-    npm install --save-exact prisma@5.22.0 @prisma/client@5.22.0
+# Install ALL dependencies including dev for prisma CLI
+RUN npm install
 
-# Copy built files from builder
+# Copy prisma schema
+COPY prisma ./prisma/
+
+# Copy built files
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
+# Generate Prisma Client at runtime
+RUN npx prisma generate
 
 # Set environment
 ENV NODE_ENV=production
