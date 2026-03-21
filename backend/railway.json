@@ -1,7 +1,9 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "dockerfile": "Dockerfile"
+    "builder": "NIXPACKS",
+    "buildCommand": "npm install && npm run prisma:generate && npm run build && npx prisma migrate deploy",
+    "startCommand": "node dist/main"
   },
   "deploy": {
     "numReplicas": 1,
