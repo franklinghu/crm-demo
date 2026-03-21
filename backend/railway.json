@@ -3,7 +3,7 @@
   "build": {
     "builder": "NIXPACKS",
     "buildCommand": "npm install && npm run build",
-    "startCommand": "node dist/main"
+    "startCommand": "PORT=3000 node dist/main"
   },
   "deploy": {
     "numReplicas": 1,
