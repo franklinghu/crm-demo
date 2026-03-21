@@ -11,7 +11,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:5173',
-      'https://crm-demo.vercel.app',
+      'https://crm-demo-frontend.vercel.app',
       /\.vercel\.app$/,
     ],
     credentials: true,
@@ -30,8 +30,8 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1');
 
   const port = configService.get('PORT', 3000);
-  await app.listen(port);
-  console.log(`🚀 Application is running on: http://localhost:${port}`);
+  await app.listen(port, '0.0.0.0');
+  console.log(`🚀 Application is running on: http://0.0.0.0:${port}`);
 }
 
 bootstrap();
